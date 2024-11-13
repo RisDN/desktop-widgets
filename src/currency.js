@@ -1,7 +1,7 @@
 "use strict";
 
 class Freecurrencyapi {
-  baseUrl = "https://api.freecurrencyapi.com/v1/latest?";
+  baseUrl = "https://api.freecurrencyapi.com/v1/";
 
   constructor(apiKey = "") {
     this.headers = {

@@ -14,7 +14,7 @@ import {
 import Freecurrencyapi from "./currency";
 
 function App() {
-  const [numbers, setNumbers] = useState<number[]>([]);
+  const [numbers, setNumbers] = useState<number[]>([0]);
   const [eur, setEur] = useState<number>(0);
   const [usd, setUsd] = useState<number>(0);
 
@@ -29,6 +29,11 @@ function App() {
 
   const currencyapi = new Freecurrencyapi("");
   useEffect(() => {
+    setCurrencies();
+  }, []);
+
+
+  const setCurrencies = async () => {
     currencyapi
       .latest({
         base_currency: "EUR",
@@ -45,14 +50,18 @@ function App() {
         console.log(data.data);
         setUsd(data.data.HUF);
       });
-  }, []);
+  };
+
   const exchange = (from: string, to: string): number => {
-    console.log(eur);
-    if (from === "EUR" && to === "HUF") return eur * toExactNumber();
-    if (from === "HUF" && to === "EUR") return toExactNumber() / eur;
-    if (from === "USD" && to === "HUF") return usd * toExactNumber();
-    if (from === "HUF" && to === "USD") return toExactNumber() / usd;
+    if (from === "EUR" && to === "HUF") return round(eur * toExactNumber(), 2);
+    if (from === "HUF" && to === "EUR") return round(toExactNumber() / eur, 2);
+    if (from === "USD" && to === "HUF") return round(usd * toExactNumber(), 2);
+    if (from === "HUF" && to === "USD") return round(toExactNumber() / usd, 2);
     return 32;
+  };
+
+  const round = (num: number, digits: number): number => {
+    return Math.round(num * Math.pow(10, digits)) / Math.pow(10, digits);
   };
 
   return (
@@ -63,22 +72,25 @@ function App() {
 
       <div className="grid col-span-2 grid-cols-2 text-fuchsia-200 w-full">
         <div className="row-auto">
-          <h1>Pénznem</h1>
+          <h1 className="text-center">Pénznem</h1>
           <div className="flex flex-col">
             <span>
-              {dislayNumbers()} EUR = {Math.floor(exchange("EUR", "HUF"))} HUF
+              {dislayNumbers()} EUR = {exchange("EUR", "HUF")} HUF
             </span>
             <span>
-              {dislayNumbers()} HUF = {Math.floor(exchange("HUF", "EUR"))} EUR
+              {dislayNumbers()} HUF = {exchange("HUF", "EUR")} EUR
             </span>
 
             <span>
-              {dislayNumbers()} USD = {Math.floor(exchange("USD", "HUF"))} HUF
+              {dislayNumbers()} USD = {exchange("USD", "HUF")} HUF
             </span>
 
             <span>
-              {dislayNumbers()} HUF = {Math.floor(exchange("HUF", "USD"))} USD
+              {dislayNumbers()} HUF = {exchange("HUF", "USD")} USD
             </span>
+          </div>
+          <div>
+            <button onClick={() => setCurrencies()} className="mx-2 px-4 py-2 bg-gray-400 rounded-md text-lg font-semibold hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50">Refresh</button>
           </div>
         </div>
         <div className="row-auto">
@@ -108,7 +120,7 @@ function App() {
             </span>
             <span>
               {dislayNumbers()} nappal ezelőtt:
-              {formatDate(wasHoursAgo(toExactNumber()))}
+              {formatDate(wasDaysAgo(toExactNumber()))}
             </span>
             <span>
               {dislayNumbers()} hónappal ezelőtt:
@@ -126,7 +138,13 @@ function App() {
         <div className="control-buttons"></div>
         {Array.from({ length: 10 }).map((_, number) => (
           <button
-            onClick={() => setNumbers([...numbers, number])}
+            onClick={() => {
+              if (numbers[0] === 0) {
+                setNumbers([number]);
+              } else {
+                setNumbers([...numbers, number]);
+              }
+            }}
             key={number}
             className=" mx-2 px-4 py-2 bg-gray-400 rounded-md text-lg font-semibold hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
           >
